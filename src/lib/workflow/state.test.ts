@@ -27,7 +27,8 @@ describe("run state machine", () => {
     expect(canTransition("PROPOSING", "WRITING")).toBe(false);
     expect(canTransition("PROPOSING", "APPROVED")).toBe(false);
     expect(canTransition("AWAITING_APPROVAL", "WRITING")).toBe(false);
-    expect(canTransition("AWAITING_APPROVAL", "COMPLETED")).toBe(false);
+    expect(canTransition("RECEIVED", "COMPLETED")).toBe(false);
+    expect(canTransition("GATHERING", "WRITING")).toBe(false);
   });
 
   it("makes terminal states final", () => {

@@ -17,7 +17,8 @@ const TRANSITIONS: Record<RunState, readonly RunState[]> = {
   RECEIVED: ["GATHERING", "FAILED"],
   GATHERING: ["PROPOSING", "NEEDS_CLARIFICATION", "CANNOT_FULFILL", "FAILED"],
   PROPOSING: ["AWAITING_APPROVAL", "GATHERING", "NEEDS_CLARIFICATION", "CANNOT_FULFILL", "FAILED"],
-  AWAITING_APPROVAL: ["APPROVED", "REJECTED", "FAILED"],
+  // COMPLETED here means the last pending proposal was decided after others were already written
+  AWAITING_APPROVAL: ["APPROVED", "REJECTED", "COMPLETED", "FAILED"],
   APPROVED: ["WRITING", "AWAITING_APPROVAL", "FAILED"],
   // a failed write returns to AWAITING_APPROVAL so the human can retry safely
   WRITING: ["COMPLETED", "AWAITING_APPROVAL", "FAILED"],
