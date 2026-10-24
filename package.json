@@ -16,14 +16,18 @@
     "baseline:digest": "tsx --env-file=.env scripts/baseline-digest.ts",
     "reset": "scripts/reset-odoo.sh",
     "agent:quote": "tsx --env-file=.env scripts/agent.ts quote",
-    "agent:procure": "tsx --env-file=.env scripts/agent.ts procure"
+    "agent:procure": "tsx --env-file=.env scripts/agent.ts procure",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --env-file=.env scripts/migrate.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.87",
     "@ai-sdk/google": "^4.0.104",
     "@ai-sdk/openai": "^4.0.101",
     "ai": "^7.0.152",
+    "drizzle-orm": "^0.45.4",
     "next": "16.4.3",
+    "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "^4.6.7"
@@ -33,8 +37,10 @@
     "@commitlint/config-conventional": "^21.2.4",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "eslint-config-prettier": "^10.1.8",
