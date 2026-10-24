@@ -1,4 +1,5 @@
 import type { OdooClient, OdooDomain } from "./client";
+import { PRICELIST_ITEM_FIELDS, mapPricelistRule, type PricelistRule } from "../pricing/pricelist";
 import {
   ORDER_FIELDS,
   PARTNER_FIELDS,
@@ -101,6 +102,31 @@ export class OdooRepository {
     ]);
     const byProduct = new Map(orderpoints.map((o) => [o.product_id[0], o]));
     return products.map((p) => mapStockLevel(p, byProduct.get((p as { id: number }).id)));
+  }
+
+  /** Pricelist rules, as evaluated by lib/pricing. */
+  async getPricelistRules(pricelistId: number): Promise<PricelistRule[]> {
+    const rows = await this.odoo.searchRead(
+      "product.pricelist.item",
+      [["pricelist_id", "=", pricelistId]],
+      { fields: [...PRICELIST_ITEM_FIELDS], order: "id" },
+    );
+    return rows.map(mapPricelistRule);
+  }
+
+  /** Average unit price on confirmed sales order lines, or null when never sold. */
+  async getHistoricalAvgPrice(productId: number): Promise<number | null> {
+    const lines = await this.odoo.searchRead<{ price_unit: number; product_uom_qty: number }>(
+      "sale.order.line",
+      [
+        ["product_id", "=", productId],
+        ["order_id.state", "in", ["sale", "done"]],
+      ],
+      { fields: ["price_unit", "product_uom_qty"] },
+    );
+    const qty = lines.reduce((s, l) => s + l.product_uom_qty, 0);
+    if (qty === 0) return null;
+    return lines.reduce((s, l) => s + l.price_unit * l.product_uom_qty, 0) / qty;
   }
 
   async getSupplierPrices(productId: number): Promise<SupplierPrice[]> {
