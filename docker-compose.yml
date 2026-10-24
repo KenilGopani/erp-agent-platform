@@ -32,7 +32,7 @@ services:
       - "${ODOO_PORT:-8069}:8069"
     volumes:
       - odoo-web-data:/var/lib/odoo
-    command: ["odoo", "--db_name=${ODOO_DB:-odoo}", "--dbfilter=^${ODOO_DB:-odoo}$"]
+    command: ["odoo", "--database=${ODOO_DB:-odoo}", "--db-filter=^${ODOO_DB:-odoo}$"]
 
   # One-shot: creates the Odoo database, installs Community modules, sets the
   # integration user's password. Safe to re-run (modules are only updated).
