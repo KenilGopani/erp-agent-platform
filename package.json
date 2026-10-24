@@ -14,7 +14,9 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "seed": "tsx --env-file=.env scripts/seed-odoo.ts",
     "baseline:digest": "tsx --env-file=.env scripts/baseline-digest.ts",
-    "reset": "scripts/reset-odoo.sh"
+    "reset": "scripts/reset-odoo.sh",
+    "agent:quote": "tsx --env-file=.env scripts/agent.ts quote",
+    "agent:procure": "tsx --env-file=.env scripts/agent.ts procure"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.87",
