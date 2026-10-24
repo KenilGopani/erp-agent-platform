@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# env (keep the example)
+.env
+.env.*
+!.env.example
+
+# docker volumes / local data
+data/
+.docker/
+pgdata/
+odoo-data/
+
+# evals
+evals/results/*.tmp
+
+# build / test output
+coverage/
+dist/
+*.tsbuildinfo
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
