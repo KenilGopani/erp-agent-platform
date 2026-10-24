@@ -1,0 +1,72 @@
+# Odoo Community 18.0 + its Postgres, plus a separate Postgres for the app.
+# First run: `docker compose --profile init run --rm odoo-init` (see README).
+name: manufacturing-ops-copilot
+
+x-odoo-db-env: &odoo-db-env
+  HOST: odoo-db
+  USER: odoo
+  PASSWORD: ${ODOO_DB_PASSWORD:-odoo}
+
+services:
+  odoo-db:
+    image: postgres:16.15-alpine
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: ${ODOO_DB_PASSWORD:-odoo}
+      POSTGRES_DB: postgres
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  odoo:
+    image: odoo:18.0-20261015
+    depends_on:
+      odoo-db:
+        condition: service_healthy
+    environment: *odoo-db-env
+    ports:
+      - "${ODOO_PORT:-8069}:8069"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+    command: ["odoo", "--db_name=${ODOO_DB:-odoo}", "--dbfilter=^${ODOO_DB:-odoo}$"]
+
+  # One-shot: creates the Odoo database, installs Community modules, sets the
+  # integration user's password. Safe to re-run (modules are only updated).
+  odoo-init:
+    profiles: ["init"]
+    image: odoo:18.0-20261015
+    depends_on:
+      odoo-db:
+        condition: service_healthy
+    environment:
+      <<: *odoo-db-env
+      ODOO_DB: ${ODOO_DB:-odoo}
+      ODOO_PASSWORD: ${ODOO_PASSWORD:-admin}
+    volumes:
+      - ./infra/init-odoo.sh:/init-odoo.sh:ro
+    entrypoint: ["bash", "/init-odoo.sh"]
+
+  app-db:
+    image: postgres:16.15-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD:-app}
+      POSTGRES_DB: copilot
+    ports:
+      - "${APP_DB_PORT:-5433}:5432"
+    volumes:
+      - app-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d copilot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  odoo-db-data:
+  odoo-web-data:
+  app-db-data:
