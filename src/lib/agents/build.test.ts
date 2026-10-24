@@ -131,6 +131,30 @@ describe("buildQuotation", () => {
     expect(r.ok && r.proposal.lines[0]).toMatchObject({ unitPrice: 81, discountPct: 19 });
   });
 
+  it("honours a human unit price override and rejects non-positive ones", async () => {
+    const submission = {
+      outcome: "propose" as const,
+      customerId: 7,
+      lines: [{ productId: 1, quantity: 10 }],
+    };
+    const ok = await buildQuotation(submission, {
+      repo: quotingRepo({ 1: 100 }),
+      now: () => NOW,
+      unitPriceOverrides: { 1: 85 },
+    });
+    expect(ok.ok && ok.proposal.lines[0]).toMatchObject({
+      unitPrice: 85,
+      lineTotal: 850,
+      discountPct: 15,
+    });
+    const bad = await buildQuotation(submission, {
+      repo: quotingRepo({ 1: 100 }),
+      now: () => NOW,
+      unitPriceOverrides: { 1: 0 },
+    });
+    expect(!bad.ok && bad.violations.map((v) => v.code)).toEqual(["non_positive_price"]);
+  });
+
   it.each([
     [{ outcome: "propose" as const, lines: [{ productId: 1, quantity: 1 }] }, "missing_customer"],
     [
@@ -203,6 +227,15 @@ describe("buildPurchaseProposal", () => {
       moq: 20,
       forecastedBefore: 10,
     });
+  });
+
+  it("honours a human unit price override", async () => {
+    const r = await buildPurchaseProposal(order(60), {
+      repo: procurementRepo(10),
+      now: () => NOW,
+      unitPriceOverrides: { 1: 2 },
+    });
+    expect(r.ok && r.proposal.total).toBe(120);
   });
 
   it("blocks quantities below the MOQ", async () => {

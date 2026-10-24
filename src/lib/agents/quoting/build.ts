@@ -20,6 +20,8 @@ export type QuotingRepo = Pick<
 export interface BuildDeps {
   repo: QuotingRepo;
   now?: () => Date;
+  /** Human edits made before approval: productId -> unit price replacing the computed one. */
+  unitPriceOverrides?: Record<number, number>;
 }
 
 const CURRENCY = "USD";
@@ -111,7 +113,18 @@ export async function buildQuotation(
 
     // An explicit extra discount is applied on top of the tier price, then judged against the limit.
     const extra = line.extraDiscountPct ?? 0;
-    const unitPrice = extra > 0 ? roundMoney(tier.unitPrice * (1 - extra / 100)) : tier.unitPrice;
+    const override = deps.unitPriceOverrides?.[product.id];
+    if (override !== undefined && !(override > 0)) {
+      violations.push({
+        code: "non_positive_price",
+        severity: "block",
+        message: `Unit price must be greater than zero, got ${override}.`,
+        path: `${path}.unitPrice`,
+      });
+      continue;
+    }
+    const unitPrice =
+      override ?? (extra > 0 ? roundMoney(tier.unitPrice * (1 - extra / 100)) : tier.unitPrice);
     const discountPct =
       product.listPrice > 0
         ? roundMoney(((product.listPrice - unitPrice) / product.listPrice) * 100)
@@ -150,6 +163,8 @@ export async function buildQuotation(
       fulfillment,
       estimatedLeadTimeDays: leadTime,
       note: line.note ?? null,
+      extraDiscountPct: extra,
+      priceOverride: override ?? null,
     });
   }
 

@@ -16,6 +16,8 @@ export type ProcurementRepo = Pick<
 export interface ProcurementBuildDeps {
   repo: ProcurementRepo;
   now?: () => Date;
+  /** Human edits made before approval: productId -> unit price replacing the supplier's. */
+  unitPriceOverrides?: Record<number, number>;
 }
 
 type Order = NonNullable<ProcurementSubmission["orders"]>[number];
@@ -92,6 +94,16 @@ export async function buildPurchaseProposal(
       continue;
     }
 
+    const unitPrice = deps.unitPriceOverrides?.[product.id] ?? offer.unitPrice;
+    if (!(unitPrice > 0)) {
+      violations.push({
+        code: "non_positive_price",
+        severity: "block",
+        message: `Unit price must be greater than zero, got ${unitPrice}.`,
+        path: `${path}.unitPrice`,
+      });
+      continue;
+    }
     if (line.quantity < offer.minQty) {
       violations.push({
         code: "below_moq",
@@ -107,14 +119,15 @@ export async function buildPurchaseProposal(
       name: product.name,
       uom: product.uom,
       quantity: line.quantity,
-      unitPrice: offer.unitPrice,
-      lineTotal: roundMoney(line.quantity * offer.unitPrice),
+      unitPrice,
+      lineTotal: roundMoney(line.quantity * unitPrice),
       moq: offer.minQty,
       leadTimeDays: offer.leadTimeDays,
       expectedArrival: isoDate(addDays(today, offer.leadTimeDays)),
       forecastedBefore: forecast,
       reorderPoint,
       reason: line.reason,
+      priceOverride: deps.unitPriceOverrides?.[product.id] ?? null,
     });
   }
 
