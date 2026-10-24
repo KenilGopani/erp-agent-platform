@@ -127,6 +127,7 @@ export async function buildPurchaseProposal(
       forecastedBefore: forecast,
       reorderPoint,
       reason: line.reason,
+      priceOverride: deps.unitPriceOverrides?.[product.id] ?? null,
     });
   }
 

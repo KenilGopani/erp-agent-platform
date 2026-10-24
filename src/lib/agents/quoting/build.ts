@@ -163,6 +163,8 @@ export async function buildQuotation(
       fulfillment,
       estimatedLeadTimeDays: leadTime,
       note: line.note ?? null,
+      extraDiscountPct: extra,
+      priceOverride: override ?? null,
     });
   }
 

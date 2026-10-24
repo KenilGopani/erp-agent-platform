@@ -22,6 +22,10 @@ export const quotationLineSchema = z.object({
   /** 0 when shipping from stock; otherwise the shortest supplier lead time. */
   estimatedLeadTimeDays: z.number().nullable(),
   note: z.string().nullable(),
+  /** Extra discount the customer asked for on top of their tier. Kept so re-validation reproduces the price. */
+  extraDiscountPct: z.number().default(0),
+  /** Unit price set by a human reviewer, replacing the computed one. */
+  priceOverride: z.number().nullable().default(null),
 });
 
 export const quotationProposalSchema = z.object({
@@ -57,6 +61,7 @@ export const purchaseLineSchema = z.object({
   forecastedBefore: z.number(),
   reorderPoint: z.number().nullable(),
   reason: z.string(),
+  priceOverride: z.number().nullable().default(null),
 });
 
 export const purchaseProposalSchema = z.object({
