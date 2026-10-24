@@ -17,6 +17,10 @@
     "reset": "scripts/reset-odoo.sh"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.87",
+    "@ai-sdk/google": "^4.0.104",
+    "@ai-sdk/openai": "^4.0.101",
+    "ai": "^7.0.152",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
