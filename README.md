@@ -3,7 +3,7 @@
 AI agents that quote and procure against a real ERP (Odoo), with an approval gate,
 draft-only writes and measured evals. Work in progress: see [plan.md](plan.md).
 
-**Status:** Phase 2 (read tools, quoting and procurement agents). Evals, observability and guardrails are deliberately deferred.
+**Status:** Phase 3 (workflow state machine, approval executor, Postgres persistence). Evals, observability and guardrails are deliberately deferred.
 
 ## Quick start
 
@@ -16,6 +16,7 @@ docker compose up -d odoo-db app-db
 docker compose --profile init run --rm odoo-init   # one-time Odoo DB setup
 docker compose up -d odoo
 pnpm seed                                          # fictional manufacturer
+pnpm db:migrate                                    # app database tables
 pnpm test && pnpm test:integration                 # unit + live-Odoo tests
 ```
 
@@ -59,4 +60,5 @@ Nothing is written to Odoo by the agents.
 
 - [Odoo setup and API key](docs/odoo-setup.md)
 - [Seed data and shortage scenarios](docs/seed-data.md)
+- [Architecture and state machine](docs/architecture.md)
 - [Decisions](docs/decisions.md)
