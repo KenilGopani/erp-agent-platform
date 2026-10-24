@@ -37,6 +37,7 @@ export const rawPartner = z.object({
 export const PRODUCT_FIELDS = [
   "default_code",
   "name",
+  "product_tmpl_id",
   "uom_id",
   "lst_price",
   "standard_price",
@@ -52,6 +53,7 @@ export const rawProduct = z.object({
   id: z.number(),
   default_code: optionalString,
   name: z.string(),
+  product_tmpl_id: many2one,
   uom_id: many2one,
   lst_price: z.number(),
   standard_price: z.number(),
@@ -108,6 +110,8 @@ export const rawOrder = z.object({
   date_order: optionalDate,
   amount_total: z.number(),
   order_line: z.array(z.number()),
+  /** Sales orders only: promised delivery date. */
+  commitment_date: optionalDate.optional(),
 });
 
 export const rawSaleLine = z.object({
@@ -146,6 +150,7 @@ export type Customer = z.infer<typeof customerSchema>;
 
 export const productSchema = z.object({
   id: z.number(),
+  templateId: z.number(),
   sku: z.string().nullable(),
   name: z.string(),
   uom: z.string(),
@@ -229,6 +234,7 @@ export function mapProduct(raw: unknown): Product {
   const r = rawProduct.parse(raw);
   return {
     id: r.id,
+    templateId: r.product_tmpl_id?.id ?? 0,
     sku: r.default_code,
     name: r.name,
     uom: r.uom_id?.name ?? "Units",
@@ -293,7 +299,7 @@ export function mapSalesOrder(rawOrderRecord: unknown, rawLines: unknown[]): Sal
         fulfilled: line.qty_delivered,
         unitPrice: line.price_unit,
         discountPct: line.discount,
-        expectedDate: o.date_order,
+        expectedDate: o.commitment_date ?? o.date_order,
       };
     }),
   };

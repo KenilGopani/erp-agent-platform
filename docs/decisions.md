@@ -34,3 +34,33 @@ changes. It is slower (about a minute) but guarantees a bit-identical baseline.
   `LayoutProps` type.
 - Husky hooks run lint-staged and commitlint only. Typecheck and tests run at phase
   end and in CI.
+
+## Model submits choices, code computes numbers
+
+Agents finish by calling `submit_result` with ids and quantities only. Prices,
+discounts, totals, MOQs and lead times are computed by the proposal builders from
+Odoo data, so a model cannot invent a price. Builder rejections are returned to the
+model as a tool result so it can correct itself.
+
+## Agents have no write path
+
+The write layer (`src/lib/tools/write`) is not imported by any agent code, and
+`boundary.test.ts` enforces this. Writes are idempotent per key (the key is stored in
+`client_order_ref` / `partner_ref`) and create drafts only.
+
+## Deferred by request
+
+Evals, step-level observability and the guardrail layer (limits, price sanity) are
+deferred. `src/lib/guardrails` and `src/lib/observability` exist but are not wired
+into the agents.
+
+## No real-model run yet
+
+No provider API keys were available during development, so agents are tested with a
+scripted model against the real tools and a live Odoo. Nothing here claims
+real-model quality.
+
+## Added tools beyond the plan
+
+`find_shortages` and `get_replenishment_options` keep scanning and reorder math in
+code instead of in the model.

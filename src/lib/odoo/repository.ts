@@ -1,4 +1,5 @@
 import type { OdooClient, OdooDomain } from "./client";
+import { PRICELIST_ITEM_FIELDS, mapPricelistRule, type PricelistRule } from "../pricing/pricelist";
 import {
   ORDER_FIELDS,
   PARTNER_FIELDS,
@@ -53,6 +54,19 @@ export class OdooRepository {
     return row ? mapCustomer(row) : null;
   }
 
+  /** Name of a supplier partner, or null if the id is not a supplier. */
+  async getSupplierName(id: number): Promise<string | null> {
+    const [row] = await this.odoo.searchRead<{ name: string }>(
+      "res.partner",
+      [
+        ["id", "=", id],
+        ["supplier_rank", ">", 0],
+      ],
+      { fields: ["name"], limit: 1 },
+    );
+    return row?.name ?? null;
+  }
+
   async listCustomers(): Promise<Customer[]> {
     const rows = await this.odoo.searchRead("res.partner", [["customer_rank", ">", 0]], {
       fields: [...PARTNER_FIELDS],
@@ -103,6 +117,31 @@ export class OdooRepository {
     return products.map((p) => mapStockLevel(p, byProduct.get((p as { id: number }).id)));
   }
 
+  /** Pricelist rules, as evaluated by lib/pricing. */
+  async getPricelistRules(pricelistId: number): Promise<PricelistRule[]> {
+    const rows = await this.odoo.searchRead(
+      "product.pricelist.item",
+      [["pricelist_id", "=", pricelistId]],
+      { fields: [...PRICELIST_ITEM_FIELDS], order: "id" },
+    );
+    return rows.map(mapPricelistRule);
+  }
+
+  /** Average unit price on confirmed sales order lines, or null when never sold. */
+  async getHistoricalAvgPrice(productId: number): Promise<number | null> {
+    const lines = await this.odoo.searchRead<{ price_unit: number; product_uom_qty: number }>(
+      "sale.order.line",
+      [
+        ["product_id", "=", productId],
+        ["order_id.state", "in", ["sale", "done"]],
+      ],
+      { fields: ["price_unit", "product_uom_qty"] },
+    );
+    const qty = lines.reduce((s, l) => s + l.product_uom_qty, 0);
+    if (qty === 0) return null;
+    return lines.reduce((s, l) => s + l.price_unit * l.product_uom_qty, 0) / qty;
+  }
+
   async getSupplierPrices(productId: number): Promise<SupplierPrice[]> {
     const [product] = await this.odoo.read<{ product_tmpl_id: [number, string] }>(
       "product.product",
@@ -132,7 +171,7 @@ export class OdooRepository {
     if (options.states) domain.push(["state", "in", options.states]);
     if (options.productId) domain.push(["order_line.product_id", "=", options.productId]);
     const orders = await this.odoo.searchRead("sale.order", domain, {
-      fields: [...ORDER_FIELDS],
+      fields: [...ORDER_FIELDS, "commitment_date"],
       order: "id",
       limit: options.limit,
     });

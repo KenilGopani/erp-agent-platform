@@ -12,6 +12,7 @@ const productRecord = {
   id: 5,
   default_code: "STL-SHT-2",
   name: "Steel sheet 2mm",
+  product_tmpl_id: [50, "Steel sheet 2mm"],
   uom_id: [1, "Units"],
   lst_price: 40,
   standard_price: 25,
@@ -46,6 +47,7 @@ describe("mappers", () => {
   it("maps a product", () => {
     expect(mapProduct(productRecord)).toMatchObject({
       id: 5,
+      templateId: 50,
       sku: "STL-SHT-2",
       uom: "Units",
       listPrice: 40,

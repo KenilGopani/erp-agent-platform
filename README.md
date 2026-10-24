@@ -3,7 +3,7 @@
 AI agents that quote and procure against a real ERP (Odoo), with an approval gate,
 draft-only writes and measured evals. Work in progress: see [plan.md](plan.md).
 
-**Status:** Phase 1 (foundation: Odoo, seed data, typed client).
+**Status:** Phase 2 (read tools, quoting and procurement agents). Evals, observability and guardrails are deliberately deferred.
 
 ## Quick start
 
@@ -41,6 +41,19 @@ Odoo is then at http://localhost:8069 (login `admin` / `admin`).
 | `pnpm test`                    | Unit tests (no services needed)                      |
 | `pnpm test:integration`        | Tests against the running, seeded Odoo               |
 | `pnpm lint` / `pnpm typecheck` | Static checks                                        |
+
+## Running the agents
+
+Set a provider key and `AGENT_MODEL` in `.env` (see `.env.example`), then:
+
+```bash
+pnpm agent:quote "Ironbridge needs 40 base plates 300x300"
+pnpm agent:procure "check shortages"
+```
+
+The agent calls read tools, then submits a proposal. Prices, totals, MOQs and lead
+times are computed in code from Odoo data; the model only chooses what and how much.
+Nothing is written to Odoo by the agents.
 
 ## Docs
 
