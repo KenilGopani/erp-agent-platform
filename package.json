@@ -12,7 +12,9 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "seed": "tsx --env-file=.env scripts/seed-odoo.ts"
+    "seed": "tsx --env-file=.env scripts/seed-odoo.ts",
+    "baseline:digest": "tsx --env-file=.env scripts/baseline-digest.ts",
+    "reset": "scripts/reset-odoo.sh"
   },
   "dependencies": {
     "next": "16.4.3",
