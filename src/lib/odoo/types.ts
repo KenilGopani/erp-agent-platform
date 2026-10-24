@@ -110,6 +110,8 @@ export const rawOrder = z.object({
   date_order: optionalDate,
   amount_total: z.number(),
   order_line: z.array(z.number()),
+  /** Sales orders only: promised delivery date. */
+  commitment_date: optionalDate.optional(),
 });
 
 export const rawSaleLine = z.object({
@@ -297,7 +299,7 @@ export function mapSalesOrder(rawOrderRecord: unknown, rawLines: unknown[]): Sal
         fulfilled: line.qty_delivered,
         unitPrice: line.price_unit,
         discountPct: line.discount,
-        expectedDate: o.date_order,
+        expectedDate: o.commitment_date ?? o.date_order,
       };
     }),
   };

@@ -158,7 +158,7 @@ export class OdooRepository {
     if (options.states) domain.push(["state", "in", options.states]);
     if (options.productId) domain.push(["order_line.product_id", "=", options.productId]);
     const orders = await this.odoo.searchRead("sale.order", domain, {
-      fields: [...ORDER_FIELDS],
+      fields: [...ORDER_FIELDS, "commitment_date"],
       order: "id",
       limit: options.limit,
     });
