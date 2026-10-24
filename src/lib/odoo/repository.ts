@@ -54,6 +54,19 @@ export class OdooRepository {
     return row ? mapCustomer(row) : null;
   }
 
+  /** Name of a supplier partner, or null if the id is not a supplier. */
+  async getSupplierName(id: number): Promise<string | null> {
+    const [row] = await this.odoo.searchRead<{ name: string }>(
+      "res.partner",
+      [
+        ["id", "=", id],
+        ["supplier_rank", ">", 0],
+      ],
+      { fields: ["name"], limit: 1 },
+    );
+    return row?.name ?? null;
+  }
+
   async listCustomers(): Promise<Customer[]> {
     const rows = await this.odoo.searchRead("res.partner", [["customer_rank", ">", 0]], {
       fields: [...PARTNER_FIELDS],
