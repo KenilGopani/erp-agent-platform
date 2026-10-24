@@ -68,7 +68,7 @@ describe("OdooClient", () => {
   });
 
   it("retries reads on transient errors with backoff", async () => {
-    const sleep = vi.fn(async (_ms: number) => {});
+    const sleep = vi.fn<(ms: number) => Promise<void>>(async () => {});
     const f = vi
       .fn()
       .mockResolvedValueOnce(ok(2))
