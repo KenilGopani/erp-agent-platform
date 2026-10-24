@@ -8,6 +8,8 @@ export default defineConfig({
     include: ["src/**/*.integration.test.ts"],
     env: loadEnv(),
     testTimeout: 30_000,
+    // some tests create temporary drafts, so files must not overlap
+    fileParallelism: false,
   },
 });
 
