@@ -105,9 +105,18 @@ export async function runAgent<S, R>(options: RunAgentOptions<S, R>): Promise<Ru
     } catch (err) {
       return {
         ok: false,
-        reason: `Model call failed: ${err instanceof Error ? err.message : String(err)}`,
+        reason: `Model call failed: ${describeError(err)}`,
       };
     }
   }
   return { ok: false, reason: "The model did not produce a valid submission." };
+}
+
+/** Provider errors often have an empty message; fall back to the HTTP status and a short body excerpt. */
+export function describeError(err: unknown): string {
+  if (!(err instanceof Error)) return String(err);
+  const e = err as Error & { statusCode?: number; responseBody?: string };
+  if (e.message) return e.message;
+  const detail = typeof e.responseBody === "string" ? e.responseBody.slice(0, 200) : "";
+  return [e.name, e.statusCode ? `HTTP ${e.statusCode}` : "", detail].filter(Boolean).join(" ");
 }

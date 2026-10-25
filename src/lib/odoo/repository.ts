@@ -36,6 +36,22 @@ const PURCHASE_LINE_FIELDS = [
   "date_planned",
 ];
 
+/**
+ * Every word must match at least one of the fields, in any order, so "DN100 flange"
+ * finds "Flange DN100". Words are ANDed (implicit in Odoo domains), fields ORed.
+ */
+export function tokenDomain(query: string, fields: string[]): OdooDomain {
+  // "plates" should find "plate": drop a trailing plural "s" from longer words
+  const tokens = query
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((t) => (t.length > 3 && /[^s]s$/i.test(t) ? t.slice(0, -1) : t));
+  return tokens.flatMap((token) => [
+    ...Array<string>(fields.length - 1).fill("|"),
+    ...fields.map((f): [string, string, unknown] => [f, "ilike", token]),
+  ]);
+}
+
 /** Read-only access to Odoo, returning validated domain types. */
 export class OdooRepository {
   constructor(private readonly odoo: OdooClient) {}
@@ -43,7 +59,7 @@ export class OdooRepository {
   async findCustomers(query: string, limit = 10): Promise<Customer[]> {
     const rows = await this.odoo.searchRead(
       "res.partner",
-      [["customer_rank", ">", 0], "|", ["name", "ilike", query], ["email", "ilike", query]],
+      [["customer_rank", ">", 0], ...tokenDomain(query, ["name", "email"])],
       { fields: [...PARTNER_FIELDS], limit, order: "name" },
     );
     return rows.map(mapCustomer);
@@ -78,9 +94,7 @@ export class OdooRepository {
   async findProducts(search: { query?: string; sku?: string }, limit = 10): Promise<Product[]> {
     const domain: OdooDomain = [];
     if (search.sku) domain.push(["default_code", "=ilike", search.sku]);
-    if (search.query) {
-      domain.push("|", ["name", "ilike", search.query], ["default_code", "ilike", search.query]);
-    }
+    if (search.query) domain.push(...tokenDomain(search.query, ["name", "default_code"]));
     const rows = await this.odoo.searchRead("product.product", domain, {
       fields: [...PRODUCT_FIELDS],
       limit,

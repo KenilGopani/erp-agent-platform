@@ -175,6 +175,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^4.0.101
         version: 4.0.101(zod@4.6.7)
+      '@ai-sdk/openai-compatible':
+        specifier: ^3.0.77
+        version: 3.0.77(zod@4.6.7)
       ai:
         specifier: ^7.0.152
         version: 7.0.152(zod@4.6.7)
@@ -298,6 +301,12 @@ packages:
 
   '@ai-sdk/google@4.0.104':
     resolution: {integrity: sha512-7wSW1ajTBHPMV0cNeba8g42sZHElmc92yRTh8ZsBjkg9Zbg6hmPaPO1kBirSsJUc4oKe9jlp4+5i/0BfFu8RHA==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/openai-compatible@3.0.77':
+    resolution: {integrity: sha512-RzFe7uaMo6Yww9SdeGwHjNiERQvT79unzMlvQva7QEpjUDjzWE/OK04wTLFBRlJrxYMOSSLjUCJKGJGU9os9zQ==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -3817,6 +3826,12 @@ snapshots:
       zod: 4.6.7
 
   '@ai-sdk/google@4.0.104(zod@4.6.7)':
+    dependencies:
+      '@ai-sdk/provider': 4.0.33
+      '@ai-sdk/provider-utils': 5.0.67(zod@4.6.7)
+      zod: 4.6.7
+
+  '@ai-sdk/openai-compatible@3.0.77(zod@4.6.7)':
     dependencies:
       '@ai-sdk/provider': 4.0.33
       '@ai-sdk/provider-utils': 5.0.67(zod@4.6.7)

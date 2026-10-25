@@ -26,6 +26,15 @@ _Screenshots use runs from the scripted demo model (see [Web UI](#web-ui)), not 
 Nothing in this repository claims measured accuracy or cost. There is no eval table because no evals
 have been run.
 
+**Spot checks with real models.** Through the NVIDIA NIM API (`NVIDIA_API_KEY`, models such as
+`nvidia:nvidia/nemotron-3-ultra-550b-a55b` and `nvidia:openai/gpt-oss-20b`), five hosted models each
+produced the same, correct quotation for one simple request, and one model handled a handful of
+hand-written requests and a full shortage check sensibly (asked about an ambiguous customer and a
+vague quantity, did not follow an injected "confirm the order" instruction, grouped purchase orders by
+supplier and skipped products already covered by open POs). That is a few manual runs, not a benchmark.
+The checks also found a real bug (multi-word product search) which is fixed, and confirmed a known gap:
+a requested 25% discount was accepted because the guardrail limits are deferred.
+
 ## How it works
 
 ```mermaid
@@ -85,8 +94,10 @@ Setup details and API key creation: [docs/odoo-setup.md](docs/odoo-setup.md).
   a link to the draft in Odoo
 - **/traces** every run with status, model and duration; drill into the event timeline
 
-New runs need `AGENT_MODEL` (`<provider>:<model-id>`, e.g. `anthropic:<id>`) and the matching key
-(`ANTHROPIC_API_KEY`, `OPENAI_API_KEY` or `GOOGLE_GENERATIVE_AI_API_KEY`). To explore without a key,
+New runs need `AGENT_MODEL` (`<provider>:<model-id>`, e.g. `anthropic:<id>` or `nvidia:<org>/<model>`) and the
+matching key (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY` or `NVIDIA_API_KEY`).
+Not every model listed by a provider is callable with your account (NVIDIA returns 404 for some), and models
+need working tool calling. To explore without a key,
 `pnpm demo:runs` creates runs from a scripted stand-in model (id `demo:scripted`): real tools, pricing,
 Odoo data and approval flow, but no LLM. Walkthrough: [docs/demo-script.md](docs/demo-script.md).
 
@@ -128,7 +139,7 @@ runs lint, typecheck, unit tests and build; it has not been run on GitHub yet.
 
 ## Limitations and what is next
 
-- **No real-model run yet.** Prompts and tool descriptions are untested against an actual LLM.
+- **Prompts are lightly tested.** Only the manual spot checks above; no systematic comparison across models.
 - **No evals.** The plan's eval suite (60-100 cases, model comparison) is the next big piece.
 - **No guardrail limits.** Max discount, order value, quantity and price-sanity checks are drafted in
   `src/lib/guardrails` but not wired in. Today's validation covers existence, positive quantities, MOQ,
