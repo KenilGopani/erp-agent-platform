@@ -19,11 +19,20 @@ describe("model specs", () => {
     expect(() => resolveModel("openai:m", {})).toThrow(/OPENAI_API_KEY/);
     expect(() => resolveModel("anthropic:m", {})).toThrow(/ANTHROPIC_API_KEY/);
     expect(() => resolveModel("google:m", {})).toThrow(/GOOGLE_GENERATIVE_AI_API_KEY/);
+    expect(() => resolveModel("nvidia:m", {})).toThrow(/NVIDIA_API_KEY/);
   });
 
   it("builds a model when the key is present", () => {
     const model = resolveModel("anthropic:some-model", { ANTHROPIC_API_KEY: "x" });
     expect(model).toBeTruthy();
+  });
+
+  it("builds an nvidia model from provider-qualified ids that contain slashes", () => {
+    expect(parseModelSpec("nvidia:meta/llama-3.3-70b-instruct")).toEqual({
+      provider: "nvidia",
+      modelId: "meta/llama-3.3-70b-instruct",
+    });
+    expect(resolveModel("nvidia:org/model", { NVIDIA_API_KEY: "x" })).toBeTruthy();
   });
 
   it("requires AGENT_MODEL for the default", () => {

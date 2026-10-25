@@ -1,9 +1,10 @@
 import { anthropic } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type { LanguageModel } from "ai";
 
-export const PROVIDERS = ["openai", "anthropic", "google"] as const;
+export const PROVIDERS = ["openai", "anthropic", "google", "nvidia"] as const;
 export type Provider = (typeof PROVIDERS)[number];
 
 /** A model reference such as `anthropic:claude-sonnet-5-5`. IDs always come from config. */
@@ -16,7 +17,11 @@ const KEY_ENV: Record<Provider, string> = {
   openai: "OPENAI_API_KEY",
   anthropic: "ANTHROPIC_API_KEY",
   google: "GOOGLE_GENERATIVE_AI_API_KEY",
+  nvidia: "NVIDIA_API_KEY",
 };
+
+/** NVIDIA NIM serves an OpenAI-compatible chat completions API. */
+const NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
 
 export function parseModelSpec(spec: string): ModelSpec {
   const idx = spec.indexOf(":");
@@ -50,6 +55,12 @@ export function resolveModel(
       return anthropic(s.modelId);
     case "google":
       return google(s.modelId);
+    case "nvidia":
+      return createOpenAICompatible({
+        name: "nvidia",
+        baseURL: env.NVIDIA_BASE_URL || NVIDIA_BASE_URL,
+        apiKey: env.NVIDIA_API_KEY,
+      }).chatModel(s.modelId);
   }
 }
 
