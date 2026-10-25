@@ -91,3 +91,15 @@ would need a queue or worker.
 ## No /evals page
 
 Evals are deferred, so there is no evals page yet.
+
+## NVIDIA NIM through the OpenAI-compatible adapter
+
+The `nvidia` provider uses `@ai-sdk/openai-compatible` against
+`https://integrate.api.nvidia.com/v1` (override with `NVIDIA_BASE_URL`), chat completions only. Model ids
+contain a slash (`nvidia:nvidia/nemotron-3-ultra-550b-a55b`). Availability varies per account: the models
+list endpoint includes models that return 404 when called.
+
+## Search matches words, not phrases
+
+`find_products` and `find_customer` AND every word across name/SKU/email and treat simple plurals as
+singular. Found by a real model searching "DN100 flange" for a product called "Flange DN100".
