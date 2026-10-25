@@ -41,7 +41,11 @@ const PURCHASE_LINE_FIELDS = [
  * finds "Flange DN100". Words are ANDed (implicit in Odoo domains), fields ORed.
  */
 export function tokenDomain(query: string, fields: string[]): OdooDomain {
-  const tokens = query.split(/\s+/).filter(Boolean);
+  // "plates" should find "plate": drop a trailing plural "s" from longer words
+  const tokens = query
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((t) => (t.length > 3 && /[^s]s$/i.test(t) ? t.slice(0, -1) : t));
   return tokens.flatMap((token) => [
     ...Array<string>(fields.length - 1).fill("|"),
     ...fields.map((f): [string, string, unknown] => [f, "ilike", token]),

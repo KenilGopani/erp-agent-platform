@@ -62,6 +62,10 @@ describe("read tools against the seeded baseline", () => {
       matches: { sku: string }[];
     };
     expect(r.matches.map((m) => m.sku)).toEqual(["FLG-DN100"]);
+    const plural = (await call("find_products", { query: "base plates 300x300" })) as {
+      matches: { sku: string }[];
+    };
+    expect(plural.matches.map((m) => m.sku)).toEqual(["PLT-BASE-300"]);
     const none = (await call("find_products", { query: "flange titanium" })) as {
       matches: unknown[];
     };

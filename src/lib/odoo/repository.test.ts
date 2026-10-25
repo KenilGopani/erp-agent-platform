@@ -13,6 +13,19 @@ describe("tokenDomain", () => {
     ]);
   });
 
+  it("treats simple plurals as the singular", () => {
+    expect(tokenDomain("plates flanges bolts", ["name"])).toEqual([
+      ["name", "ilike", "plate"],
+      ["name", "ilike", "flange"],
+      ["name", "ilike", "bolt"],
+    ]);
+    // words that merely end in "ss" or are short are left alone
+    expect(tokenDomain("brass gas", ["name"])).toEqual([
+      ["name", "ilike", "brass"],
+      ["name", "ilike", "gas"],
+    ]);
+  });
+
   it("handles extra whitespace and empty input", () => {
     expect(tokenDomain("  a  ", ["name"])).toEqual([["name", "ilike", "a"]]);
     expect(tokenDomain("   ", ["name"])).toEqual([]);
