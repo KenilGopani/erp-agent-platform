@@ -57,6 +57,21 @@ describe("read tools against the seeded baseline", () => {
     expect(await call("find_customer", { query: "Nonexistent Corp" })).toEqual({ matches: [] });
   });
 
+  it("find_products matches words in any order", async () => {
+    const r = (await call("find_products", { query: "DN100 flange" })) as {
+      matches: { sku: string }[];
+    };
+    expect(r.matches.map((m) => m.sku)).toEqual(["FLG-DN100"]);
+    const none = (await call("find_products", { query: "flange titanium" })) as {
+      matches: unknown[];
+    };
+    expect(none.matches).toEqual([]);
+    const c = (await call("find_customer", { query: "Fabrication Ironbridge" })) as {
+      matches: { name: string }[];
+    };
+    expect(c.matches.map((m) => m.name)).toEqual(["Ironbridge Fabrication"]);
+  });
+
   it("get_inventory reflects reservations and forecast", async () => {
     expect(await call("get_inventory", { productId: ids["PLT-BASE-300"] })).toMatchObject({
       onHand: 12,
