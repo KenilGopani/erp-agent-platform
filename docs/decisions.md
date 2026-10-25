@@ -64,3 +64,30 @@ real-model quality.
 
 `find_shortages` and `get_replenishment_options` keep scanning and reorder math in
 code instead of in the model.
+
+## UI: shadcn-style components, written by hand
+
+The shadcn CLI failed to install components reliably (it kept adding a stray `cn`
+package), so the few components needed (button, card, badge, alert, inputs) are small
+Tailwind components in `src/components/ui`, using `class-variance-authority`, `clsx` and
+`tailwind-merge` as shadcn does.
+
+## Cache Components
+
+Next 16 enables `cacheComponents`, so route `dynamic` exports are not allowed. Pages put
+their data access inside `<Suspense>` boundaries instead.
+
+## Event stream is database-polled SSE
+
+`/api/runs/[id]/events` replays stored `run_events` then follows new ones, resumable with
+`Last-Event-ID`. It works across restarts and needs no in-memory pub/sub.
+
+## Runs execute in the web process
+
+`POST /api/runs` starts the agent in the background of the Node server and returns
+immediately. That is fine for the self-hosted Docker Compose mode; a serverless deploy
+would need a queue or worker.
+
+## No /evals page
+
+Evals are deferred, so there is no evals page yet.

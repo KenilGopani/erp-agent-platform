@@ -3,7 +3,7 @@
 AI agents that quote and procure against a real ERP (Odoo), with an approval gate,
 draft-only writes and measured evals. Work in progress: see [plan.md](plan.md).
 
-**Status:** Phase 3 (workflow state machine, approval executor, Postgres persistence). Evals, observability and guardrails are deliberately deferred.
+**Status:** Phases 1-4 built (Odoo + seed, tools and agents, workflow and approval, web UI). Evals, observability and guardrails are deliberately deferred.
 
 ## Quick start
 
@@ -25,12 +25,14 @@ Odoo is then at http://localhost:8069 (login `admin` / `admin`).
 
 ## Pinned versions
 
-| Component  | Version                               |
-| ---------- | ------------------------------------- |
-| Odoo       | Community 18.0 (`odoo:18.0-20261015`) |
-| PostgreSQL | 16.15 (`postgres:16.15-alpine`)       |
-| Next.js    | 16.4.3 / React 19.3.0                 |
-| Zod        | 4.x                                   |
+| Component  | Version                                           |
+| ---------- | ------------------------------------------------- |
+| Odoo       | Community 18.0 (`odoo:18.0-20261015`)             |
+| PostgreSQL | 16.15 (`postgres:16.15-alpine`)                   |
+| Next.js    | 16.4.3 / React 19.3.0                             |
+| Zod        | 4.x                                               |
+| AI SDK     | `ai` 7.x with OpenAI, Anthropic, Google providers |
+| Drizzle    | 0.45 with `pg` 8                                  |
 
 ## Scripts
 
@@ -42,6 +44,23 @@ Odoo is then at http://localhost:8069 (login `admin` / `admin`).
 | `pnpm test`                    | Unit tests (no services needed)                      |
 | `pnpm test:integration`        | Tests against the running, seeded Odoo               |
 | `pnpm lint` / `pnpm typecheck` | Static checks                                        |
+
+## Web UI
+
+```bash
+pnpm db:migrate        # app database tables (once)
+pnpm dev               # http://localhost:3000
+```
+
+- **/** : request box (Quote request or Check shortages) and recent runs
+- **/runs/[id]** : live progress, then the proposal card with Approve / Edit / Reject.
+  Approving creates a **draft** in Odoo and shows its link; nothing is ever confirmed.
+- **/traces** : every run with status, model and duration; drill into the event timeline
+
+New runs need `AGENT_MODEL` and a provider key in `.env`. To explore the UI without a key,
+`pnpm demo:runs` fills the app database with runs from a scripted stand-in model (model id
+`demo:scripted`). Those runs use the real tools, pricing, Odoo data and approval flow, but say
+nothing about LLM quality.
 
 ## Running the agents
 
